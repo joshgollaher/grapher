@@ -77,8 +77,6 @@ impl eframe::App for App {
 
                 plot_ui.line(Line::new(points));
             });
-
-            ui.label(format!("Plot has {} points", (self.start.abs() + self.end.abs()) as usize * POINTS_PER_UNIT));
         });
     }
 }
