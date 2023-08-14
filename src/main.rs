@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem="windows")]
 
-use eframe::{egui, Frame};
+use eframe::{egui, Frame, Storage};
 use egui::{Context, Vec2};
 use egui::plot::{Line, Plot, PlotPoints};
 use std::default::Default;
@@ -27,7 +27,7 @@ fn main() -> Result<(), eframe::Error> {
         initial_window_size: Some(Vec2::new(1200., 700.)),
         ..Default::default()
     };
-    eframe::run_native("Grapher", options, Box::new(|_cc| Box::new(App::new())))
+    eframe::run_native("Grapher", options, Box::new(|cc| Box::new(App::new(cc.storage))))
 }
 
 struct App {
@@ -37,9 +37,17 @@ struct App {
 }
 
 impl App {
-    fn new() -> App {
+    fn new(storage: Option<&dyn Storage>) -> App {
+
+        let mut eq = "".to_owned();
+
+        if let Some(s) = storage {
+            eq = s.get_string("equation").unwrap_or("".to_owned());
+            println!("Loaded!");
+        }
+
         App {
-            equation: "".to_owned(),
+            equation: eq,
             start: -10,
             end: 10
         }
@@ -60,6 +68,7 @@ impl App {
 }
 
 impl eframe::App for App {
+
     fn update(&mut self, ctx: &Context, frame: &mut Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Grapher");
@@ -78,5 +87,10 @@ impl eframe::App for App {
                 plot_ui.line(Line::new(points));
             });
         });
+    }
+
+    fn save(&mut self, storage: &mut dyn Storage) {
+        storage.set_string("equation", self.equation.clone());
+        println!("Saved!");
     }
 }
